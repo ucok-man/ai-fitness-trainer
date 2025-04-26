@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section className="relative z-10 py-24 grow">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative max-lg:gap-12">
           {/* CORNER DECARATION */}
           <div className="absolute -top-10 left-0 w-40 h-40 border-l-2 border-t-2" />
 

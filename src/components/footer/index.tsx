@@ -27,37 +27,37 @@ export default function Footer() {
           {/* Links */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-12 gap-y-2 text-sm">
             <Link
-              href="/about"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               About
             </Link>
             <Link
-              href="/terms"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Terms
             </Link>
             <Link
-              href="/privacy"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Privacy
             </Link>
             <Link
-              href="/contact"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Contact
             </Link>
             <Link
-              href="/blog"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Blog
             </Link>
             <Link
-              href="/help"
+              href="/#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
               Help

@@ -1,5 +1,6 @@
 "use client";
 
+import { Toaster } from "@/components/ui/sonner";
 import { convexclient } from "@/lib/convex";
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
@@ -16,6 +17,7 @@ export default function Providers({ children }: Props) {
     >
       <ConvexProviderWithClerk client={convexclient} useAuth={useAuth}>
         {children}
+        <Toaster />
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );
