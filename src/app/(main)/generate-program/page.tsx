@@ -113,6 +113,7 @@ export default function ProgramPage() {
         await vapiclient.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
           variableValues: {
             full_name: `${user?.firstName?.trim()} ${user?.lastName?.trim()}`,
+            user_id: user?.id,
           },
         });
       } catch (error) {
