@@ -14,7 +14,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as helpers_prompt from "../helpers/prompt.js";
-import type * as helpers_zod_schema from "../helpers/zod-schema.js";
 import type * as http from "../http.js";
 import type * as plans from "../plans.js";
 import type * as users from "../users.js";
@@ -29,7 +28,6 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   "helpers/prompt": typeof helpers_prompt;
-  "helpers/zod-schema": typeof helpers_zod_schema;
   http: typeof http;
   plans: typeof plans;
   users: typeof users;

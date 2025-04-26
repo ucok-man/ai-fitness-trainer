@@ -9,7 +9,7 @@ import {
   DietPlanSchema,
   VapiPayloadSchema,
   WorkoutPlanSchema,
-} from "./helpers/zod-schema";
+} from "./helpers/zod.schema";
 
 const http = httpRouter();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
