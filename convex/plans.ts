@@ -67,3 +67,41 @@ export const getPlansByClerkId = query({
     return plans;
   },
 });
+
+export const removePlanById = mutation({
+  args: { planId: v.id("plans"), clerkId: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+
+    if (!user) throw new Error(`No user found with clerkId ${args.clerkId}`);
+
+    const plan = await ctx.db
+      .query("plans")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("_id"), args.planId),
+          q.eq(q.field("userId"), user._id)
+        )
+      )
+      .first();
+
+    if (!plan) throw new Error(`No plan found with clerkId ${args.planId}`);
+    if (plan.isActive) {
+      const planToBeActive = await ctx.db
+        .query("plans")
+        .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+        .filter((q) => q.not(q.eq(q.field("_id"), plan._id)))
+        .order("desc")
+        .first();
+
+      if (planToBeActive) {
+        await ctx.db.patch(planToBeActive?._id, { isActive: true });
+      }
+    }
+
+    return await ctx.db.delete(plan._id);
+  },
+});

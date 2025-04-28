@@ -9,15 +9,20 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppleIcon, CalendarIcon, DumbbellIcon } from "lucide-react";
+import { UserResource } from "@clerk/types";
+import { useMutation } from "convex/react";
+import { AppleIcon, CalendarIcon, DumbbellIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { api } from "../../../../convex/_generated/api";
 import CornerDecoration from "./corner-decoration";
 
 type Props = {
+  user: UserResource;
   plans: Doc<"plans">[];
 };
 
-export default function PlansContent({ plans }: Props) {
+export default function PlansContent({ plans, user }: Props) {
+  const removePlan = useMutation(api.plans.removePlanById);
   const [selectedPlanId, setSelectedPlanId] = useState<null | string>(null);
   const activePlan = plans?.find((plan) => plan.isActive);
   const currentPlan = selectedPlanId
@@ -52,6 +57,7 @@ export default function PlansContent({ plans }: Props) {
               }`}
             >
               {plan.name}
+
               {plan.isActive && (
                 <span className="ml-2 bg-green-500/20 text-green-500 text-xs px-2 py-0.5 rounded">
                   ACTIVE
@@ -73,6 +79,17 @@ export default function PlansContent({ plans }: Props) {
             <h3 className="text-lg font-bold">
               PLAN: <span className="text-primary">{currentPlan.name}</span>
             </h3>
+            <Button
+              onClick={() =>
+                removePlan({
+                  planId: currentPlan._id,
+                  clerkId: user.id,
+                })
+              }
+              className="bg-transparent text-red-500 hover:bg-transparent hover:scale-105"
+            >
+              <Trash2 />
+            </Button>
           </div>
 
           <Tabs defaultValue="workout" className="w-full">

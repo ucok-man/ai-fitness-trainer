@@ -54,6 +54,12 @@ export default function ProgramPage() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleError = (error: any) => {
+      if (error.errorMsg.includes("Meeting has ended")) {
+        setIsConnecting(false);
+        setIsCallActive(false);
+        return;
+      }
+
       console.error("Vapi error: ", error);
       setIsConnecting(false);
       setIsCallActive(false);
@@ -101,6 +107,30 @@ export default function ProgramPage() {
       return () => clearTimeout(redirectDelay);
     }
   }, [isCallEnded, router]);
+
+  // get rid of "Meeting has ended" error
+  useEffect(() => {
+    const originalError = console.error;
+    // override console.error to ignore "Meeting has ended" errors
+    console.error = function (msg, ...args) {
+      if (
+        msg &&
+        (msg.includes("Meeting has ended") ||
+          (args[0] && args[0].toString().includes("Meeting has ended")))
+      ) {
+        console.log("Ignoring known error: Meeting has ended");
+        return; // don't pass to original handler
+      }
+
+      // pass all other errors to the original handler
+      return originalError.call(console, msg, ...args);
+    };
+
+    // restore original handler on unmount
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
 
   const toogleCall = async () => {
     if (isCallActive) vapiclient.stop();
@@ -190,9 +220,7 @@ export default function ProgramPage() {
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-foreground">
-                Your Assistant
-              </h2>
+              <h2 className="text-xl font-bold text-foreground">Trainer</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Fitness & Diet Coach
               </p>

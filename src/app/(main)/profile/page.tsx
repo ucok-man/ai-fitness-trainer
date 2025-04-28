@@ -29,7 +29,7 @@ export default function ProfilePage() {
       <Header user={user} />
 
       {plans && plans?.length > 0 ? (
-        <PlansContent plans={plans} />
+        <PlansContent plans={plans} user={user} />
       ) : (
         <EmptyPlans />
       )}
