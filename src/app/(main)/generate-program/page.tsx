@@ -9,6 +9,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+const showErrorToast = () =>
+  toast("Sorry we have problem in our server", {
+    description:
+      "Please try again! if you see this message frequently, contact our support",
+  });
+
 export default function ProgramPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
@@ -20,8 +26,8 @@ export default function ProgramPage() {
 
   const { user } = useUser();
   const router = useRouter();
+  const messageContainerRef = useRef<HTMLDivElement>(null);
 
-  // setup event listener
   useEffect(() => {
     const handleCallStart = () => {
       setIsCallActive(true);
@@ -36,60 +42,46 @@ export default function ProgramPage() {
       setIsSpeaking(false);
     };
 
-    const handleSpeechStart = () => {
-      setIsSpeaking(true);
-    };
+    const handleSpeechStart = () => setIsSpeaking(true);
+    const handleSpeechEnd = () => setIsSpeaking(false);
 
-    const handleSpeechEnd = () => {
-      setIsSpeaking(false);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleMessage = (msg: any) => {
-      if (msg.type === "transcript" && msg.transcriptType === "final") {
-        const message = { content: msg.transcript, role: msg.role };
-        setMessages((prev) => [...prev, message]);
+      if (msg?.type === "transcript" && msg.transcriptType === "final") {
+        setMessages((prev) => [
+          ...prev,
+          { content: msg.transcript, role: msg.role },
+        ]);
       }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleError = (error: any) => {
-      if (error.errorMsg.includes("Meeting has ended")) {
-        setIsConnecting(false);
-        setIsCallActive(false);
-        return;
-      }
-
-      console.error("Vapi error: ", error);
+      if (error?.errorMsg?.includes("Meeting has ended")) return;
+      console.error("Vapi error:", error);
       setIsConnecting(false);
       setIsCallActive(false);
-      toast("Sorry we have problem in our server", {
-        description:
-          "Please try again! if you see this message frequently, contact our support",
-      });
+      showErrorToast();
     };
 
-    vapiclient
-      .on("call-start", handleCallStart)
-      .on("call-end", handleCallEnd)
-      .on("speech-start", handleSpeechStart)
-      .on("speech-end", handleSpeechEnd)
-      .on("message", handleMessage)
-      .on("error", handleError);
+    const events = [
+      ["call-start", handleCallStart],
+      ["call-end", handleCallEnd],
+      ["speech-start", handleSpeechStart],
+      ["speech-end", handleSpeechEnd],
+      ["message", handleMessage],
+      ["error", handleError],
+    ] as const;
+
+    for (const [event, handler] of events) {
+      vapiclient.on(event, handler);
+    }
 
     return () => {
-      vapiclient
-        .off("call-start", handleCallStart)
-        .off("call-end", handleCallEnd)
-        .off("speech-start", handleSpeechStart)
-        .off("speech-end", handleSpeechEnd)
-        .off("message", handleMessage)
-        .off("error", handleError);
+      for (const [event, handler] of events) {
+        vapiclient.off(event, handler);
+      }
     };
   }, []);
 
-  // Setup auto scroll on message container
-  const messageContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (messageContainerRef.current) {
       messageContainerRef.current.scrollTop =
@@ -97,63 +89,53 @@ export default function ProgramPage() {
     }
   }, [messages]);
 
-  // Navigate user profile page after call ends
   useEffect(() => {
-    if (isCallEnded) {
-      const redirectDelay = setTimeout(() => {
-        router.push("/profile");
-      }, 1500);
-
-      return () => clearTimeout(redirectDelay);
-    }
+    if (!isCallEnded) return;
+    const timer = setTimeout(() => router.push("/profile"), 1500);
+    return () => clearTimeout(timer);
   }, [isCallEnded, router]);
 
-  // get rid of "Meeting has ended" error
   useEffect(() => {
     const originalError = console.error;
-    // override console.error to ignore "Meeting has ended" errors
     console.error = function (msg, ...args) {
       if (
-        msg &&
-        (msg.includes("Meeting has ended") ||
-          (args[0] && args[0].toString().includes("Meeting has ended")))
+        msg?.includes("Meeting has ended") ||
+        args[0]?.toString().includes("Meeting has ended")
       ) {
         console.log("Ignoring known error: Meeting has ended");
-        return; // don't pass to original handler
+        return;
       }
-
-      // pass all other errors to the original handler
       return originalError.call(console, msg, ...args);
     };
-
-    // restore original handler on unmount
     return () => {
       console.error = originalError;
     };
   }, []);
 
-  const toogleCall = async () => {
-    if (isCallActive) vapiclient.stop();
-    else {
-      try {
-        setIsConnecting(false);
-        setIsCallEnded(false);
-        setMessages([]);
+  const toggleCall = async () => {
+    if (isCallActive) return vapiclient.stop();
 
-        await vapiclient.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
+    try {
+      setIsConnecting(true);
+      setIsCallEnded(false);
+      setMessages([]);
+
+      await vapiclient.start(
+        undefined,
+        undefined,
+        undefined,
+        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID,
+        {
           variableValues: {
             full_name: `${user?.firstName?.trim()} ${user?.lastName?.trim()}`,
             user_id: user?.id,
           },
-        });
-      } catch (error) {
-        console.error("Failed to start call: ", error);
-        setIsConnecting(false);
-        toast("Sorry we have problem in our server", {
-          description:
-            "Please try again! if you see this message frequently, contact our support",
-        });
-      }
+        }
+      );
+    } catch (error) {
+      console.error("Failed to start call: ", error);
+      setIsConnecting(false);
+      showErrorToast();
     }
   };
 
@@ -324,7 +306,7 @@ export default function ProgramPage() {
                   ? "bg-green-600 hover:bg-green-700"
                   : "bg-primary hover:bg-primary/90"
             } text-white relative`}
-            onClick={toogleCall}
+            onClick={toggleCall}
             disabled={isConnecting || isCallEnded}
           >
             {isConnecting && (

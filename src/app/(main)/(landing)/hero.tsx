@@ -69,7 +69,7 @@ export default function Hero() {
               >
                 <Link
                   href={"/generate-program"}
-                  className="flex items-center font-mono"
+                  className="flex items-center font-mono max-sm:text-base"
                 >
                   Build Your Program
                   <ArrowRightIcon className="ml-2 size-5" />

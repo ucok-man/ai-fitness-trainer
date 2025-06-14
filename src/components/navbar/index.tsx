@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { DumbbellIcon, HomeIcon, UserIcon, ZapIcon } from "lucide-react";
+import { DumbbellIcon, UserIcon, ZapIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function Navbar() {
@@ -26,14 +26,6 @@ export default function Navbar() {
           {isSignedIn ? (
             <>
               <Link
-                href="/"
-                className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
-              >
-                <HomeIcon size={16} className="sm:inline-block hidden" />
-                <span>Home</span>
-              </Link>
-
-              <Link
                 href="/generate-program"
                 className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
               >
@@ -46,15 +38,8 @@ export default function Navbar() {
                 className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
               >
                 <UserIcon size={16} className="sm:inline-block hidden" />
-                <span>Profile</span>
+                <span>My Program</span>
               </Link>
-              <Button
-                asChild
-                variant="outline"
-                className="ml-2 border-primary/50 text-primary hover:text-white hover:bg-primary/10"
-              >
-                <Link href="/generate-program">Get Started</Link>
-              </Button>
               <UserButton />
             </>
           ) : (
